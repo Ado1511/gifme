@@ -40,15 +40,10 @@ function Settings() {
   };
 
   const onSubmit = async (data: FormData) => {
-    if (!data.username.trim()) {
-      toast.error('Username cannot be empty');
-      return;
-    }
-
     const formData = new FormData();
-    formData.append('username', data.username.trim());
+    formData.append('username', data.username);
     if (avatar) formData.append('avatar', avatar);
-
+  
     try {
       const res = await fetch('http://localhost:5000/api/auth/update-profile', {
         method: 'PUT',
@@ -57,27 +52,25 @@ function Settings() {
         },
         body: formData,
       });
-
-      const text = await res.text();
+  
       let result;
       try {
-        result = JSON.parse(text);
-      } catch {
+        result = await res.json();
+      } catch (err) {
         throw new Error('Server returned an invalid response');
       }
-
+  
       if (res.ok) {
         toast.success('Profile updated successfully ✅');
-        setAvatar(null);
-        setPreview(null);
       } else {
         toast.error(result.message || 'Failed to update profile');
       }
-    } catch (error) {
-      console.error('❌ Error updating profile:', error);
-      toast.error('Something went wrong');
+    } catch (err) {
+      console.error('❌ Error updating profile:', err);
+      toast.error(err instanceof Error ? err.message : 'Something went wrong');
     }
   };
+  
 
   return (
     <div className="max-w-lg px-4 py-6 mx-auto">

@@ -44,7 +44,9 @@ function Upload() {
     }
 
     const formData = new FormData();
-    formData.append('gif', file); // ✅ CORRECTO: esto debe llamarse "gif"
+    
+    // ✅ CAMBIO AQUÍ: el backend espera el campo como "file", no "gif"
+    formData.append('file', file); 
     formData.append('caption', caption);
 
     const toastId = toast.loading('Uploading your GIF...');
@@ -59,7 +61,14 @@ function Upload() {
         body: formData,
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('Server returned an invalid response');
+      }
 
       if (res.ok) {
         toast.success('GIF uploaded successfully! 🎉', { id: toastId });
